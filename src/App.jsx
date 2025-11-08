@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
+
+// ⚠️ RIMUOVI COMPLETAMENTE QUESTA RIGA:
+// import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = 'https://tuagmpinrqjyzuaoxepz.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR1YWdtcGlucnFqeXp1YW94ZXB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1OTc2NjgsImV4cCI6MjA3ODE3MzY2OH0.I3Pyn7h_UNfKgqE_oc2Z1zpzciaXMAyIjjeEq7zG3xk';
@@ -13,7 +15,42 @@ const STRIPE_CANCEL_URL = `${window.location.origin}`;
 const FREE_MONTHLY_LIMIT = 5;
 const PREMIUM_PRICE = 4.99;
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ✅ CREA CLIENT SUPABASE DIRETTAMENTE
+const createSupabaseClient = () => {
+  if (window.supabase) {
+    return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+  // Fallback per sviluppo
+  return {
+    auth: {
+      getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+      signUp: () => Promise.resolve({ data: null, error: new Error('Supabase non caricato') }),
+      signInWithPassword: () => Promise.resolve({ data: null, error: new Error('Supabase non caricato') }),
+      signOut: () => Promise.resolve({ error: null })
+    },
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          single: () => Promise.resolve({ data: null, error: new Error('Supabase non caricato') })
+        })
+      }),
+      insert: () => ({
+        select: () => ({
+          single: () => Promise.resolve({ data: null, error: new Error('Supabase non caricato') })
+        })
+      }),
+      update: () => ({
+        eq: () => ({
+          select: () => ({
+            single: () => Promise.resolve({ data: null, error: new Error('Supabase non caricato') })
+          })
+        })
+      })
+    })
+  };
+};
+
+const supabase = createSupabaseClient();
 
 export default function AIPromptGeneratorPro() {
   const [currentUser, setCurrentUser] = useState(null);

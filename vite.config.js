@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  base: '/Promptbox/', // Aggiungi questa linea
   build: {
     rollupOptions: {
       external: ['@supabase/supabase-js']
